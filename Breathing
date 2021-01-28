@@ -1,0 +1,48 @@
+const int potPin = A0;
+int potValue;
+
+const int relayPinIn = 13;
+const int relayPinOut = 12;
+
+
+unsigned long previousMillis = 0;
+
+void setup() {
+  // put your setup code here, to run once:
+  Serial.begin(9600);
+
+  pinMode(relayPinIn, OUTPUT);
+  pinMode(relayPinOut, OUTPUT);
+  pinMode(potPin, INPUT);
+
+  Serial.println("HR | BR");
+}
+
+void loop() {
+  // put your main code here, to run repeatedly:
+  potValue = analogRead(A0);
+
+  int potLevel = map(potValue, 0, 1023, 60, 200); //Heart Rate from 60 (resting)to 200 (intense exercise).
+
+  //Breaths Per Minute: 10 (resting) - 50 (intense exercise)
+  int breathLevel = map(potValue, 0, 1023, 10, 50);
+  
+  Serial.print(potLevel);
+  Serial.print(" | ");
+  Serial.print(breathLevel);
+  unsigned long myTime = millis();
+  unsigned long intervalWait = (((60.00/breathLevel)/2.00)*1000.00); //60 seconds divided by breath rate divded by two; time it takes for each in or exhale
+  Serial.print(" | ");
+  Serial.println(intervalWait);
+    if ((unsigned long)(myTime - previousMillis) >= intervalWait)
+    {
+      previousMillis = myTime;
+
+      digitalWrite(relayPinIn, LOW);
+      digitalWrite(relayPinOut, HIGH);
+      delay(intervalWait);
+      digitalWrite(relayPinIn, HIGH);
+      digitalWrite(relayPinOut, LOW);
+      delay(intervalWait);
+    }
+}
